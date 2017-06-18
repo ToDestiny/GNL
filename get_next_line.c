@@ -6,7 +6,7 @@
 /*   By: acolas <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/09 19:31:16 by acolas            #+#    #+#             */
-/*   Updated: 2017/06/13 19:00:41 by acolas           ###   ########.fr       */
+/*   Updated: 2017/06/18 20:18:49 by acolas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,8 +35,19 @@ int		get_next_line(const int fd, char **line)
 	// 012345
 	// 678901
 	//
-	//
-	//
+	static char		*tmp;
+
+	char			buff[BUFF_SIZE + 1];		
+	int				i;
+
+	if (!(tab = (char **)malloc(sizeof(char *) * BUFF_SIZE)))
+		return (-1);
+	i = 0;
+	while (read(fd, buff, BUFF_SIZE) != 0)
+	{	
+	while (*line[i] != '\n' || *line[i] != '\0')
+		i++;
+	ft_memcpy(line, tab, i);
 }
 
 int		main(void)
