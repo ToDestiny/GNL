@@ -6,7 +6,7 @@
 /*   By: acolas <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/09 19:31:16 by acolas            #+#    #+#             */
-/*   Updated: 2017/06/18 20:18:49 by acolas           ###   ########.fr       */
+/*   Updated: 2017/06/25 17:57:59 by acolas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,9 @@ int		get_next_line(const int fd, char **line)
 	// l'objectif:
 	// recup une ligne entre les \n \n ou sinon \0
 	//
+	// strjoin = si buffer lu mais pas de \n
+	// strchr = si \n dans buffer
+	//
 	// un static char a utilise !!!!
 	//
 	// text.txt:
@@ -36,19 +39,29 @@ int		get_next_line(const int fd, char **line)
 	// 678901
 	//
 	static char		*tmp;
-
 	char			buff[BUFF_SIZE + 1];		
 	int				i;
+	char			*tab;
 
-	if (!(tab = (char **)malloc(sizeof(char *) * BUFF_SIZE)))
-		return (-1);
 	i = 0;
-	while (read(fd, buff, BUFF_SIZE) != 0)
-	{	
-	while (*line[i] != '\n' || *line[i] != '\0')
-		i++;
-	ft_memcpy(line, tab, i);
+	while (*line)
+	{
+		if (!(tab = (char *)malloc(sizeof(char) * BUFF_SIZE)) || 
+				fd == 0 || fd < 0)
+			return (0);
+		while (read(fd, buff, BUFF_SIZE) != 0)
+		{	
+			if (ft_strchr(buff, '\n') !=  0)
+				return (1);
+			else
+				tmp = ft_strjoin(buff, tab);
+			i++;
+		}
+	}
+	return (0);
 }
+
+#include <stdio.h>
 
 int		main(void)
 {
