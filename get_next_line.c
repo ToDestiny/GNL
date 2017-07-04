@@ -6,12 +6,12 @@
 /*   By: acolas <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/09 19:31:16 by acolas            #+#    #+#             */
-/*   Updated: 2017/06/25 17:57:59 by acolas           ###   ########.fr       */
+/*   Updated: 2017/07/04 14:27:54 by acolas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-
+#include <stdio.h>
 int		get_next_line(const int fd, char **line)
 {
 
@@ -41,20 +41,33 @@ int		get_next_line(const int fd, char **line)
 	static char		*tmp;
 	char			buff[BUFF_SIZE + 1];		
 	int				i;
-	char			*tab;
+	char			*str;
 
 	i = 0;
 	while (*line)
 	{
-		if (!(tab = (char *)malloc(sizeof(char) * BUFF_SIZE)) || 
-				fd == 0 || fd < 0)
-			return (0);
+		if (read(fd, buff, BUFF_SIZE) < 0 || BUFF_SIZE < 0 || fd < 0)
+			return (-1);
 		while (read(fd, buff, BUFF_SIZE) != 0)
 		{	
-			if (ft_strchr(buff, '\n') !=  0)
+			//memchr
+			if (ft_memchr(line, '\n', BUFF_SIZE) !=  0)
+			{
+				// copie du debut de la string dans ?, sauvergarder la position de \n (str + i)
 				return (1);
+			}
 			else
-				tmp = ft_strjoin(buff, tab);
+				// sauvegarde la string afin de la copier avec la suivante
+				if (str != 0)
+				{
+					str = ft_strjoin(str, buff);
+					printf("%s", str);
+				}
+				else
+				{
+					str = ft_strdup(buff);
+					printf("%s", str);
+				}
 			i++;
 		}
 	}
@@ -65,10 +78,11 @@ int		get_next_line(const int fd, char **line)
 
 int		main(void)
 {
-	int fd = open("test.txt", O_RDONLY);
+	int fd = open("test0", O_RDONLY);
 	char	*line = NULL;
 
-	while ((get_next_line(fd, &line)))
+	get_next_line(fd, &line);
+	//while ((get_next_line(fd, &line)))
 		printf("%s\n", line);
 	close(fd);
 	return (0);
