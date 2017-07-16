@@ -6,12 +6,27 @@
 /*   By: acolas <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/09 19:31:16 by acolas            #+#    #+#             */
-/*   Updated: 2017/07/04 20:04:50 by acolas           ###   ########.fr       */
+/*   Updated: 2017/07/16 20:59:56 by acolas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 #include <stdio.h>
+
+int		ft_new_line(char *str, char *stat)
+{
+	int				i;
+	char			*tmp;
+
+	i = 0;
+	printf("5\n");
+	tmp = ft_strdup(ft_strchr(str + 1, '\n'));
+	ft_memdel((void **)stat);
+	ft_strcpy(stat, str);
+	printf("OK");
+	return(0);
+}
+
 int		get_next_line(const int fd, char **line)
 {
 
@@ -38,52 +53,50 @@ int		get_next_line(const int fd, char **line)
 	// 012345
 	// 678901
 	//
-	static char		*tmp;
+	static char		*stat = NULL;
 	char			buff[BUFF_SIZE + 1];		
 	int				i;
 	char			*str;
+	char			*tmp;
 
 	i = 0;
-	while (*line)
-	{
+	tmp = ft_strnew(BUFF_SIZE + 1);
+	if (!(line = (char **)malloc(sizeof(char *) * BUFF_SIZE + 1)))
+			return (0);
+	if (stat == 0)
+		str = ft_strnew(BUFF_SIZE + 1);
+	else
+		str = stat;
+	printf("2\n");
+	while (ft_strchr(tmp, '\n') == NULL)
+	{	
 		if (read(fd, buff, BUFF_SIZE) < 0 || BUFF_SIZE < 0 || fd < 0)
+		{
+			printf("fail 1");
 			return (-1);
-		while (read(fd, buff, BUFF_SIZE) != 0)
-		{	
-			//memchr
-			if (ft_memchr(line, '\n', BUFF_SIZE) !=  0)
-			{
-				// copie du debut de la string dans ?, sauvergarder la position de \n (str + i)
-				return (1);
-			}
-			else
-				// sauvegarde la string afin de la copier avec la suivante
-				if (str != 0)
-				{
-					str = ft_strjoin(str, buff);
-					printf("%s", str);
-				}
-				else
-				{
-					str = ft_strdup(buff);
-					printf("%s", str);
-				}
-			i++;
 		}
+		tmp = ft_strjoin(str, buff);
+	}
+	printf("3\n");
+	while (tmp[i] != '\n')
+		i++;
+	ft_strncpy(*line, tmp, i);
+	if (ft_new_line(str, stat) != 0)
+	{
+		printf("fail 3");
+		return (-1);
 	}
 	return (0);
 }
 
-#include <stdio.h>
-
 int		main(void)
 {
-	int fd = open("test0", O_RDONLY);
+	int fd = open("test1", O_RDONLY);
 	char	*line = NULL;
 
+	printf("1\n");
 	get_next_line(fd, &line);
-	//while ((get_next_line(fd, &line)))
-		printf("%s\n", line);
+	printf("%s\n", line);
 	close(fd);
 	return (0);
 }
