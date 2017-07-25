@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_v2.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: acolas <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/07/22 21:56:46 by acolas            #+#    #+#             */
-/*   Updated: 2017/07/25 17:11:35 by acolas           ###   ########.fr       */
+/*   Created: 2017/07/25 16:58:33 by acolas            #+#    #+#             */
+/*   Updated: 2017/07/25 18:06:34 by acolas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,21 +15,33 @@
 
 int		ft_new_line(char *stock, char **stat)
 {
-	int		i;
-	int		len;
+	int	i;
+	int	len;
 
-	ft_memdel((void **)stat);
+	ft_memdel((void **) stat);
 	*stat = ft_strdup(ft_strchr(stock, '\n') + 1);
 	i = 0;
 	if (!stock)
 		return (END);
-	len = ft_strlen(stock);	
-	while (stock[i] != '\n' && len > 0)
+	len = ft_strlen(stock);
+	while (stock[i] != '\n' && len < 0)
 	{
-		++i;
+		i++;
 		len--;
 	}
 	stock[i] = '\0';
+	return (END);
+}
+
+int		ft_stat(char **stat)
+{
+	if (stat)
+	{
+		if(ft_strchr(*stat, '\n') != 0)
+			return (OK);
+		else
+			return (2);
+	}
 	return (END);
 }
 
@@ -40,21 +52,15 @@ int		get_next_line(const int fd, char **line)
 	int				ret;
 	char			*stock;
 
-	printf("stat = %s\n", stat);
 	if (stat)
-	{	
-		stock = ft_strdup(stat);
-		if (ft_strchr(stock, '\n') !=  0)
-		{
+	{
+		ret = ft_stat(&stat);
+		if (ret == 2)
+			return (END);
+		else if (ret == 1)
+		{	
+			stock = ft_strdup(stat);
 			stat = ft_strdup(ft_strchr(stock, '\n') + 1);
-			printf("test");
-		}
-		else
-		{
-			*line = ft_strdup(stat);
-			ft_strdel(&stat);
-			printf("FIN");
-			return (OK);
 		}
 	}
 	else
@@ -62,7 +68,7 @@ int		get_next_line(const int fd, char **line)
 	while (ft_strchr(stock, '\n') == NULL)
 	{
 		ret = 0;
-		if ((ret = read(fd, buff, BUFF_SIZE)) < 0 || BUFF_SIZE < 0 || fd < 0)
+		if ((ret = read(fd, buff, BUFF_SIZE)) < 0 || BUFF_SIZE < 0 || fd <0)
 			return (ERROR);
 		buff[ret] = '\0';
 		stock = ft_strjoin(stock, buff);
@@ -73,21 +79,20 @@ int		get_next_line(const int fd, char **line)
 			*line = ft_strdup(stock);
 			return (OK);
 		}
-		else 
+		else
 			break;
 	}
+	*line = ft_strdup(stock);
 	return (END);
 }
 
 int		main(void)
 {
-	int fd = open("test4", O_RDONLY);
+	int	fd = open("test4", O_RDONLY);
 	char	*line = NULL;
 	int		ret;
 
 	while ((ret = get_next_line(fd, &line)))
-		printf("line = %s\nval ret = %d\n", line, ret);
+		printf("line = %s\nval ret = %d\n", line,ret);
 	close(fd);
 }
-
-
