@@ -6,88 +6,98 @@
 /*   By: acolas <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/07/22 21:56:46 by acolas            #+#    #+#             */
-/*   Updated: 2017/07/25 17:11:35 by acolas           ###   ########.fr       */
+/*   Updated: 2017/08/08 16:36:40 by acolas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-#include <stdio.h>
 
-int		ft_new_line(char *stock, char **stat)
+static t_type	*ft_lstnew_gnl(int fd)
 {
-	int		i;
-	int		len;
+	t_type	*dell;
 
-	ft_memdel((void **)stat);
-	*stat = ft_strdup(ft_strchr(stock, '\n') + 1);
-	i = 0;
+	dell = (t_type *)malloc(sizeof(*dell));
+	dell->content = ft_strnew(1);
+	dell->num = 1;
+	dell->fd = fd;
+	dell->next = NULL;
+	return (dell);
+}
+
+static t_type	*ft_find_fd(t_type *stock, int fd)
+{
+	t_type	*dell;
+
+	while (stock)
+	{
+		if (stock->fd == fd)
+			break ;
+		if (stock->next == NULL)
+		{
+			dell = ft_lstnew_gnl(fd);
+			stock->next = dell;
+			return (dell);
+		}
+		stock = stock->next;
+	}
+	return (stock);
+}
+
+static int		ft_print_gnl(t_type **dell, char **line)
+{
+	char	*tmp1;
+	char	*tmp2;
+
+	if ((tmp1 = ft_strchr((*dell)->content, '\n')) != NULL)
+	{
+		*line = ft_strdup((*dell)->content);
+		tmp2 = (*dell)->content;
+		(*dell)->content = ft_strdup(tmp1 + 1);
+		ft_strdel(&tmp2);
+		return (OK);
+	}
+	return (END);
+}
+
+static int		ft_read_gnl(t_type **dell, char **line)
+{
+	char	buff[BUFF_SIZE + 1];
+	char	tmp;
+
+	while (((*dell)->num = read((*dell)->fd, buff, BUFF_SIZE)) > 0)
+	{
+		buff[(*dell)->num] = '\0';
+		tmp = *ft_strjoin((*dell)->content, buff);
+		ft_strdel(&(*dell)->content);
+		(*dell)->content = &tmp;
+		if (ft_print_gnl(dell, line) == 1)
+			return (OK);
+	}
+	return (END);
+}
+
+int				get_next_line(const int fd, char **line)
+{
+	static t_type	*stock;
+	t_type			*dell;
+
+	if (fd < 0 || line == NULL || BUFF_SIZE < 1)
+		return (ERROR);
 	if (!stock)
+		stock = ft_lstnew_gnl(fd);
+	dell = ft_find_fd(stock, fd);
+	if ((ft_read_gnl(&dell, line) == 1))
+		return (OK);
+	if (dell->num == ERROR)
+		return (ERROR);
+	if (ft_strlen(dell->content) == 0)
 		return (END);
-	len = ft_strlen(stock);	
-	while (stock[i] != '\n' && len > 0)
-	{
-		++i;
-		len--;
-	}
-	stock[i] = '\0';
-	return (END);
-}
-
-int		get_next_line(const int fd, char **line)
-{
-	static char		*stat = NULL;
-	char			buff[BUFF_SIZE + 1];
-	int				ret;
-	char			*stock;
-
-	printf("stat = %s\n", stat);
-	if (stat)
-	{	
-		stock = ft_strdup(stat);
-		if (ft_strchr(stock, '\n') !=  0)
-		{
-			stat = ft_strdup(ft_strchr(stock, '\n') + 1);
-			printf("test");
-		}
-		else
-		{
-			*line = ft_strdup(stat);
-			ft_strdel(&stat);
-			printf("FIN");
-			return (OK);
-		}
-	}
+	if (ft_print_gnl(&dell, line) == 1)
+		return (OK);
 	else
-		stock = ft_strnew(0);
-	while (ft_strchr(stock, '\n') == NULL)
 	{
-		ret = 0;
-		if ((ret = read(fd, buff, BUFF_SIZE)) < 0 || BUFF_SIZE < 0 || fd < 0)
-			return (ERROR);
-		buff[ret] = '\0';
-		stock = ft_strjoin(stock, buff);
-		if (ret != 0)
-		{
-			if (ft_new_line(stock, &stat) != 0)
-				return (ERROR);
-			*line = ft_strdup(stock);
-			return (OK);
-		}
-		else 
-			break;
+		*line = ft_strdup(dell->content);
+		ft_strclr(dell->content);
 	}
-	return (END);
+	return (OK);
 }
-
-int		main(void)
-{
-	int fd = open("test4", O_RDONLY);
-	char	*line = NULL;
-	int		ret;
-
-	while ((ret = get_next_line(fd, &line)))
-		printf("line = %s\nval ret = %d\n", line, ret);
-	close(fd);
-}
-
-

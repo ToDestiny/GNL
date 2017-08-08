@@ -5,28 +5,22 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: acolas <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/07/23 12:21:33 by acolas            #+#    #+#             */
-/*   Updated: 2017/07/23 14:49:55 by acolas           ###   ########.fr       */
+/*   Created: 2017/08/08 15:19:27 by acolas            #+#    #+#             */
+/*   Updated: 2017/08/08 16:49:54 by acolas           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
 #include <stdio.h>
-#include <fcntl.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include "get_next_line.h"
-
-int	get_next_line(const int fd, char **line);
 
 int		main(void)
 {
-	int fd = open("test1", O_RDONLY);
+	int fd = open("test4", O_RDONLY);
 	char	*line = NULL;
+	int		ret;
 
-	get_next_line(fd, &line);
-	printf("%s\n", line);
-	get_next_line(fd, &line);
-	printf("%s\n", line);
-	get_next_line(fd, &line);
-	printf("%s\n", line);
+	while ((ret = get_next_line(fd, &line)))
+		printf("line = %s\nval ret = %d\n", line, ret);
 	close(fd);
 }
